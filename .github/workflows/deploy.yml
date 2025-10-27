@@ -1,0 +1,50 @@
+name: Deploy to Krystal
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Next.js app
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Write deploy marker
+        run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > deploy-marker.txt
+
+      - name: Deploy to Krystal via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.KRYSTAL_HOST }}
+          username: ${{ secrets.KRYSTAL_USER }}
+          password: ${{ secrets.KRYSTAL_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.next/cache/**
+            **/README.md
+            **/SUPABASE_SETUP.md
+            **/PROJECT_SUMMARY.md
+          log-level: verbose

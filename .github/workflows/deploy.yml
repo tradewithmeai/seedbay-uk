@@ -38,7 +38,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}/
           exclude: |
             **/.git*
             **/.git*/**
@@ -47,4 +47,9 @@ jobs:
             **/README.md
             **/SUPABASE_SETUP.md
             **/PROJECT_SUMMARY.md
+            **/KRYSTAL_SETUP.md
+            **/.env.local
+            **/supabase/**
+            **/creative-accounting-site/**
           log-level: verbose
+          dangerous-clean-slate: false

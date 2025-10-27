@@ -11,7 +11,7 @@ export default async function SeedDetailPage({
   const seed = await getSeedById(id);
 
   if (!seed) {
-    notFound();
+    return notFound();
   }
 
   const formattedDate = new Date(seed.created_at).toLocaleDateString('en-GB', {

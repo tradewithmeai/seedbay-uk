@@ -1,11 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 body {
-  @apply bg-gray-50 text-gray-900;
-}
-
-#root {
-  @apply min-h-screen flex flex-col;
+  background-color: #f9fafb;
+  color: #111827;
 }

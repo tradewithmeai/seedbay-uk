@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { SeedInsert } from '@/types/database';
+import { Database, SeedInsert } from '@/types/database';
 
 export async function getAllSeeds() {
   const { data, error } = await supabase
@@ -15,12 +15,12 @@ export async function getAllSeeds() {
   return data || [];
 }
 
-export async function getSeedById(id: string) {
-  const { data, error } = await supabase
+export async function getSeedById(id: string): Promise<Database['public']['Tables']['seeds']['Row'] | null> {
+  const { data, error } = await (supabase
     .from('seeds')
     .select('*')
     .eq('id', id)
-    .single();
+    .single() as any as Promise<{ data: Database['public']['Tables']['seeds']['Row'] | null; error: any }>);
 
   if (error) {
     console.error('Error fetching seed:', error);
@@ -30,19 +30,19 @@ export async function getSeedById(id: string) {
   return data;
 }
 
-export async function createSeed(seed: SeedInsert) {
-  const { data, error } = await supabase
+export async function createSeed(seed: SeedInsert): Promise<Database['public']['Tables']['seeds']['Row']> {
+  const { data, error } = await (supabase
     .from('seeds')
-    .insert(seed)
+    .insert(seed as any)
     .select()
-    .single();
+    .single() as any as Promise<{ data: Database['public']['Tables']['seeds']['Row'] | null; error: any }>);
 
   if (error) {
     console.error('Error creating seed:', error);
     throw error;
   }
 
-  return data;
+  return data!;
 }
 
 export async function searchSeeds(filters: {

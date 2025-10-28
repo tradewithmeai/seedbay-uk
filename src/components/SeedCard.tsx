@@ -13,7 +13,7 @@ export default function SeedCard({ seed }: SeedCardProps) {
   });
 
   return (
-    <Link href={`/view/${seed.id}`}>
+    <Link href={`/view?id=${seed.id}`}>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-5 h-full flex flex-col">
         <div className="flex items-start justify-between mb-2">
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">

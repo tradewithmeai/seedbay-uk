@@ -1,17 +1,77 @@
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
 import { getSeedById } from '@/lib/database';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import type { Seed } from '@/types/database';
 
-export default async function SeedDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const seed = await getSeedById(id);
+function SeedDetailContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') || '';
+  const [seed, setSeed] = useState<Seed | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!seed) {
-    return notFound();
+  useEffect(() => {
+    if (!id) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
+
+    async function loadSeed() {
+      try {
+        const data = await getSeedById(id);
+        if (data) {
+          setSeed(data);
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        console.error('Error loading seed:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSeed();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="h-12 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !seed) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Seed Not Found</h1>
+          <p className="text-gray-600 mb-6">Sorry, we couldn't find the seed you're looking for.</p>
+          <Link
+            href="/"
+            className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Browse All Seeds
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const formattedDate = new Date(seed.created_at).toLocaleDateString('en-GB', {
@@ -109,5 +169,28 @@ export default async function SeedDetailPage({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SeedDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="h-12 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SeedDetailContent />
+    </Suspense>
   );
 }

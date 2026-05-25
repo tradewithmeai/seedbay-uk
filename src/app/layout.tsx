@@ -1,28 +1,27 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import type { Metadata } from 'next'
+import './globals.css'
+import Providers from '@/components/Providers'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'SeedBay.uk - Community Seed Exchange Marketplace',
-  description: 'Discover, share, and trade seeds across the UK. Join our community of gardeners and seed enthusiasts.',
-  keywords: ['seeds', 'gardening', 'uk', 'marketplace', 'seed exchange', 'community'],
-};
+  title: 'SeedBay.co.uk - Community Seed Exchange',
+  description: 'Buy, sell or give away seeds across the UK. Connect directly with fellow gardeners — no middleman.',
+  keywords: ['seeds', 'gardening', 'uk', 'seed exchange', 'community', 'seedbay'],
+}
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        <Providers>
+          <Header />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
-  );
+  )
 }

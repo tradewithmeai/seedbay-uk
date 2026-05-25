@@ -1,78 +1,84 @@
-import { supabase } from './supabase';
-import { Database, SeedInsert } from '@/types/database';
+import { supabase } from './supabase'
+import { SeedInsert } from '@/types/database'
+
+function activeFilter() {
+  return new Date().toISOString()
+}
 
 export async function getAllSeeds() {
   const { data, error } = await supabase
     .from('seeds')
     .select('*')
-    .order('created_at', { ascending: false });
+    .eq('active', true)
+    .or(`expires_at.is.null,expires_at.gt.${activeFilter()}`)
+    .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching seeds:', error);
-    return [];
+    console.error('Error fetching seeds:', error)
+    return []
   }
-
-  return data || [];
+  return data || []
 }
 
-export async function getSeedById(id: string): Promise<Database['public']['Tables']['seeds']['Row'] | null> {
-  const { data, error } = await (supabase
+export async function getSeedById(id: string) {
+  const { data, error } = await supabase
     .from('seeds')
     .select('*')
     .eq('id', id)
-    .single() as any as Promise<{ data: Database['public']['Tables']['seeds']['Row'] | null; error: any }>);
+    .single()
 
   if (error) {
-    console.error('Error fetching seed:', error);
-    return null;
+    console.error('Error fetching seed:', error)
+    return null
   }
-
-  return data;
+  return data
 }
 
-export async function createSeed(seed: SeedInsert): Promise<Database['public']['Tables']['seeds']['Row']> {
-  const { data, error } = await (supabase
-    .from('seeds')
-    .insert(seed as any)
-    .select()
-    .single() as any as Promise<{ data: Database['public']['Tables']['seeds']['Row'] | null; error: any }>);
-
-  if (error) {
-    console.error('Error creating seed:', error);
-    throw error;
+export async function createSeed(seed: SeedInsert): Promise<{ id: string }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.from('seeds').insert(seed as any).select('id').single() as any) as {
+    data: { id: string } | null
+    error: Error | null
   }
 
-  return data!;
+  if (error) {
+    console.error('Error creating seed:', error)
+    throw error
+  }
+  return data!
 }
 
 export async function searchSeeds(filters: {
-  title?: string;
-  seed_type?: string;
-  location?: string;
+  title?: string
+  category?: string
+  location?: string
+  is_free?: boolean
 }) {
   let query = supabase
     .from('seeds')
     .select('*')
-    .order('created_at', { ascending: false });
+    .eq('active', true)
+    .or(`expires_at.is.null,expires_at.gt.${activeFilter()}`)
+    .order('created_at', { ascending: false })
 
   if (filters.title) {
-    query = query.ilike('title', `%${filters.title}%`);
+    query = query.or(`title.ilike.%${filters.title}%,variety.ilike.%${filters.title}%`)
   }
-
-  if (filters.seed_type) {
-    query = query.ilike('seed_type', `%${filters.seed_type}%`);
+  if (filters.category) {
+    query = query.eq('category', filters.category)
   }
-
   if (filters.location) {
-    query = query.ilike('location', `%${filters.location}%`);
+    query = query.ilike('location', `%${filters.location}%`)
+  }
+  if (filters.is_free === true) {
+    query = query.eq('is_free', true)
   }
 
-  const { data, error } = await query;
+  const { data, error } = await query
 
   if (error) {
-    console.error('Error searching seeds:', error);
-    return [];
+    console.error('Error searching seeds:', error)
+    return []
   }
-
-  return data || [];
+  return data || []
 }

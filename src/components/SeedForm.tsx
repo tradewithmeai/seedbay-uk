@@ -1,47 +1,86 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createSeed } from '@/lib/database';
-import { SeedInsert } from '@/types/database';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createSeed } from '@/lib/database'
+import { SeedInsert } from '@/types/database'
+import { supabase } from '@/lib/supabase'
+
+const CATEGORIES = ['Vegetable', 'Flower', 'Herb', 'Fruit', 'Tree / Shrub', 'Other']
+const CONTACT_METHODS = ['Email', 'WhatsApp', 'Signal', 'Other']
+const EXPIRY_OPTIONS = [
+  { label: '30 days', value: '30' },
+  { label: '60 days', value: '60' },
+  { label: '90 days', value: '90' },
+  { label: 'No expiry', value: 'never' },
+]
+
+const CONTACT_PLACEHOLDER: Record<string, string> = {
+  Email: 'you@example.com',
+  WhatsApp: 'Your WhatsApp number (inc. country code)',
+  Signal: 'Your Signal number',
+  Other: 'How should people contact you?',
+}
 
 export default function SeedForm() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isFree, setIsFree] = useState(true)
+  const [expiry, setExpiry] = useState('30')
 
-  const [formData, setFormData] = useState<SeedInsert>({
+  const [formData, setFormData] = useState({
     title: '',
+    variety: '',
+    category: 'Vegetable',
+    quantity: '',
     description: '',
-    seed_type: '',
     price: '',
+    contact_method: 'Email',
+    contact_value: '',
     location: '',
-    contact: '',
-  });
+  })
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
     try {
-      // Validate email
-      if (formData.contact && !formData.contact.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        throw new Error('Please enter a valid email address');
+      const { data: { session } } = await supabase.auth.getSession()
+
+      const expires_at =
+        expiry !== 'never'
+          ? new Date(Date.now() + Number(expiry) * 86_400_000).toISOString()
+          : null
+
+      const seed: SeedInsert = {
+        user_id: session?.user.id ?? null,
+        title: formData.title,
+        variety: formData.variety || null,
+        category: formData.category,
+        quantity: formData.quantity || null,
+        description: formData.description,
+        is_free: isFree,
+        price: isFree ? null : formData.price || null,
+        contact_method: formData.contact_method,
+        contact_value: formData.contact_value,
+        location: formData.location || null,
+        expires_at,
       }
 
-      const seed = await createSeed(formData);
-      router.push(`/view/${seed.id}`);
+      const created = await createSeed(seed)
+      router.push(`/view?id=${created.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create listing');
-      setLoading(false);
+      setError(err instanceof Error ? err.message : 'Failed to create listing')
+      setLoading(false)
     }
   }
 
@@ -54,20 +93,72 @@ export default function SeedForm() {
         </div>
       )}
 
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-          Title <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="title"
-          name="title"
-          type="text"
-          required
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="e.g. Organic Tomato Seeds - Roma Variety"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            required
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="e.g. Roma Tomato Seeds"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="variety" className="block text-sm font-medium text-gray-700 mb-1">
+            Variety
+          </label>
+          <input
+            id="variety"
+            name="variety"
+            type="text"
+            value={formData.variety}
+            onChange={handleChange}
+            placeholder="e.g. San Marzano, Brandywine"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="category"
+            name="category"
+            required
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+            Quantity
+          </label>
+          <input
+            id="quantity"
+            name="quantity"
+            type="text"
+            value={formData.quantity}
+            onChange={handleChange}
+            placeholder="e.g. 20 seeds, 1 packet, handful"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
       </div>
 
       <div>
@@ -81,41 +172,86 @@ export default function SeedForm() {
           value={formData.description}
           onChange={handleChange}
           rows={5}
-          placeholder="Describe your seeds, growing conditions, harvesting time, etc."
+          placeholder="Describe your seeds — growing conditions, when harvested, any tips..."
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
         />
       </div>
 
+      <div>
+        <p className="block text-sm font-medium text-gray-700 mb-2">Pricing</p>
+        <div className="flex gap-3 mb-3">
+          <button
+            type="button"
+            onClick={() => setIsFree(true)}
+            className={`px-5 py-2 rounded-lg font-medium transition-colors border ${
+              isFree
+                ? 'bg-green-600 text-white border-green-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            Free 🎁
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsFree(false)}
+            className={`px-5 py-2 rounded-lg font-medium transition-colors border ${
+              !isFree
+                ? 'bg-primary-600 text-white border-primary-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            For Sale £
+          </button>
+        </div>
+        {!isFree && (
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 font-medium">£</span>
+            <input
+              id="price"
+              name="price"
+              type="text"
+              value={formData.price}
+              onChange={handleChange}
+              placeholder="e.g. 2.50"
+              className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label htmlFor="seed_type" className="block text-sm font-medium text-gray-700 mb-1">
-            Seed Type
+          <label htmlFor="contact_method" className="block text-sm font-medium text-gray-700 mb-1">
+            Contact via <span className="text-red-500">*</span>
           </label>
-          <input
-            id="seed_type"
-            name="seed_type"
-            type="text"
-            value={formData.seed_type || ''}
+          <select
+            id="contact_method"
+            name="contact_method"
+            required
+            value={formData.contact_method}
             onChange={handleChange}
-            placeholder="e.g. Vegetable, Flower, Herb"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
+          >
+            {CONTACT_METHODS.map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
         </div>
 
         <div>
-          <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-            Price (£)
+          <label htmlFor="contact_value" className="block text-sm font-medium text-gray-700 mb-1">
+            Contact details <span className="text-red-500">*</span>
           </label>
           <input
-            id="price"
-            name="price"
+            id="contact_value"
+            name="contact_value"
             type="text"
-            value={formData.price || ''}
+            required
+            value={formData.contact_value}
             onChange={handleChange}
-            placeholder="e.g. 2.50 or Free"
+            placeholder={CONTACT_PLACEHOLDER[formData.contact_method]}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
-          <p className="text-xs text-gray-500 mt-1">Leave blank or enter &quot;Free&quot; for free seeds</p>
         </div>
       </div>
 
@@ -128,30 +264,31 @@ export default function SeedForm() {
             id="location"
             name="location"
             type="text"
-            value={formData.location || ''}
+            value={formData.location}
             onChange={handleChange}
-            placeholder="e.g. London, Manchester"
+            placeholder="e.g. Bristol, Yorkshire, West Midlands"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
         <div>
-          <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-1">
-            Contact Email
+          <label htmlFor="expiry" className="block text-sm font-medium text-gray-700 mb-1">
+            Listing expires after
           </label>
-          <input
-            id="contact"
-            name="contact"
-            type="email"
-            value={formData.contact || ''}
-            onChange={handleChange}
-            placeholder="your.email@example.com"
+          <select
+            id="expiry"
+            value={expiry}
+            onChange={(e) => setExpiry(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
+          >
+            {EXPIRY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 pt-2">
         <button
           type="submit"
           disabled={loading}
@@ -168,5 +305,5 @@ export default function SeedForm() {
         </button>
       </div>
     </form>
-  );
+  )
 }

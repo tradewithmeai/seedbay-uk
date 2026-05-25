@@ -1,195 +1,150 @@
-# Supabase Setup Guide for SeedBay.uk
+# Supabase Setup Guide for SeedBay.co.uk
 
 ## Overview
 
-This guide will help you set up the Supabase database for SeedBay.uk using one of your existing Supabase projects.
+This guide covers setting up the Supabase database and auth for SeedBay.co.uk.
 
-## Step-by-Step Instructions
+---
 
-### 1. Choose Your Supabase Project
+## Step 1 — Choose Your Supabase Project
 
 1. Log in to [Supabase](https://app.supabase.com/)
-2. Select one of your existing projects to use for SeedBay.uk
+2. Select an existing project or create a new one
 
-### 2. Create the Seeds Table
+---
 
-1. In your Supabase project, navigate to the **SQL Editor**
-2. Click **New Query**
-3. Copy and paste the following SQL:
+## Step 2 — Create the Seeds Table
+
+In the **SQL Editor**, run:
 
 ```sql
--- Create the seeds table
 CREATE TABLE IF NOT EXISTS seeds (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  seed_type TEXT,
-  price TEXT,
-  location TEXT,
-  contact TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID        REFERENCES auth.users(id) ON DELETE SET NULL,
+  title           TEXT        NOT NULL,
+  variety         TEXT,
+  category        TEXT        NOT NULL DEFAULT 'Other',
+  quantity        TEXT,
+  description     TEXT        NOT NULL,
+  is_free         BOOLEAN     NOT NULL DEFAULT TRUE,
+  price           TEXT,
+  contact_method  TEXT        NOT NULL DEFAULT 'Email',
+  contact_value   TEXT        NOT NULL,
+  location        TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at      TIMESTAMPTZ,
+  active          BOOLEAN     NOT NULL DEFAULT TRUE
 );
 
--- Add comments to document the schema
-COMMENT ON TABLE seeds IS 'Seed listings posted by users';
-COMMENT ON COLUMN seeds.id IS 'Unique identifier for each seed listing';
-COMMENT ON COLUMN seeds.title IS 'Title/name of the seed listing';
-COMMENT ON COLUMN seeds.description IS 'Detailed description of the seeds';
-COMMENT ON COLUMN seeds.seed_type IS 'Category/type of seed (e.g., Vegetable, Flower, Herb)';
-COMMENT ON COLUMN seeds.price IS 'Price in GBP or "Free"';
-COMMENT ON COLUMN seeds.location IS 'UK location of the seller';
-COMMENT ON COLUMN seeds.contact IS 'Contact email address';
-COMMENT ON COLUMN seeds.created_at IS 'Timestamp when listing was created';
-
--- Create an index on created_at for faster sorting
-CREATE INDEX IF NOT EXISTS idx_seeds_created_at ON seeds(created_at DESC);
-
--- Create indexes for search functionality
-CREATE INDEX IF NOT EXISTS idx_seeds_title ON seeds USING GIN(to_tsvector('english', title));
-CREATE INDEX IF NOT EXISTS idx_seeds_seed_type ON seeds(seed_type);
-CREATE INDEX IF NOT EXISTS idx_seeds_location ON seeds(location);
+CREATE INDEX IF NOT EXISTS idx_seeds_created_at  ON seeds(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_seeds_category    ON seeds(category);
+CREATE INDEX IF NOT EXISTS idx_seeds_is_free     ON seeds(is_free);
+CREATE INDEX IF NOT EXISTS idx_seeds_active      ON seeds(active);
 ```
 
-4. Click **Run** to execute the query
+---
 
-### 3. Set Up Row Level Security (RLS)
-
-Run this SQL to enable public access for reading and creating listings:
+## Step 3 — Enable Row Level Security
 
 ```sql
--- Enable Row Level Security
 ALTER TABLE seeds ENABLE ROW LEVEL SECURITY;
 
--- Policy: Allow anyone to view all seed listings
-CREATE POLICY "Anyone can view seeds"
-  ON seeds
-  FOR SELECT
-  USING (true);
+-- Anyone can browse active listings
+CREATE POLICY "Public read"
+  ON seeds FOR SELECT
+  USING (active = TRUE);
 
--- Policy: Allow anyone to create new seed listings
-CREATE POLICY "Anyone can insert seeds"
-  ON seeds
-  FOR INSERT
-  WITH CHECK (true);
+-- Authenticated users can post listings
+CREATE POLICY "Auth users can insert"
+  ON seeds FOR INSERT
+  WITH CHECK (auth.uid() IS NOT NULL);
 
--- Optional: Policy to allow users to update their own listings (for future use)
--- Uncomment when authentication is implemented
--- CREATE POLICY "Users can update own seeds"
---   ON seeds
---   FOR UPDATE
---   USING (auth.uid() = user_id)
---   WITH CHECK (auth.uid() = user_id);
-
--- Optional: Policy to allow users to delete their own listings (for future use)
--- Uncomment when authentication is implemented
--- CREATE POLICY "Users can delete own seeds"
---   ON seeds
---   FOR DELETE
---   USING (auth.uid() = user_id);
+-- Users can update/delete their own listings
+CREATE POLICY "Users manage own listings"
+  ON seeds FOR ALL
+  USING (auth.uid() = user_id);
 ```
 
-### 4. Get Your API Credentials
+---
 
-1. Navigate to **Project Settings** → **API**
-2. Copy the following values:
-   - **Project URL** (e.g., `https://abcdefgh.supabase.co`)
-   - **anon public** key (the long string starting with `eyJ...`)
-3. Add these to your `.env.local` file in the project root
+## Step 4 — Configure Auth (Magic Link)
 
-### 5. Test the Connection
+1. In your Supabase project go to **Authentication → Providers**
+2. Ensure **Email** provider is enabled
+3. Go to **Authentication → URL Configuration**
+4. Set **Site URL** to `https://seedbay.co.uk`
+5. Add to **Redirect URLs**:
+   - `https://seedbay.co.uk/post`
+   - `http://localhost:3000/post` (for local dev)
 
-Once you've added the credentials to `.env.local`, you can test the connection by running:
+That's it — magic link (passwordless) email auth is on by default.
+
+---
+
+## Step 5 — Get Your API Credentials
+
+1. Go to **Project Settings → API**
+2. Copy:
+   - **Project URL** (e.g. `https://abcdefgh.supabase.co`)
+   - **anon public** key (starts with `eyJ...`)
+3. Add to `.env.local` in the project root:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+```
+
+4. Add the same two values as **GitHub Secrets** in your repo (Settings → Secrets and variables → Actions):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+---
+
+## Step 6 — Test Locally
 
 ```bash
 npm run dev
 ```
 
-Then visit `http://localhost:3000` and try creating a test listing.
-
-## Optional: Add Sample Data
-
-If you want to test with sample data, run this SQL:
-
-```sql
-INSERT INTO seeds (title, description, seed_type, price, location, contact) VALUES
-  (
-    'Heritage Tomato Seeds - Brandywine',
-    'Beautiful heirloom tomato variety with large, pink fruits. Excellent flavor and perfect for slicing. These seeds were saved from my garden last season. Produces indeterminate vines that need support.',
-    'Vegetable',
-    'Free',
-    'Brighton, East Sussex',
-    'gardener@example.com'
-  ),
-  (
-    'Purple Sprouting Broccoli',
-    'Cold-hardy variety that produces delicious purple florets in early spring. Easy to grow and very productive. Packet of approximately 50 seeds.',
-    'Vegetable',
-    '2.50',
-    'Bristol',
-    'seeds@example.com'
-  ),
-  (
-    'Wildflower Mix - Meadow Blend',
-    'Native UK wildflower seed mix containing cornflower, poppy, oxeye daisy, and more. Perfect for creating a wildlife-friendly garden area. Covers approximately 5 square meters.',
-    'Flower',
-    '5.00',
-    'Manchester',
-    'wildflowers@example.com'
-  ),
-  (
-    'Sweet Basil Seeds',
-    'Classic Italian basil for cooking. Fast-growing and aromatic. Great for pesto, salads, and Mediterranean dishes. Approximately 100 seeds per packet.',
-    'Herb',
-    '1.50',
-    'London',
-    'herbs@example.com'
-  );
-```
-
-## Troubleshooting
-
-### Issue: "relation 'seeds' does not exist"
-- Make sure you ran the CREATE TABLE query successfully
-- Check that you're connected to the correct Supabase project
-
-### Issue: "permission denied for table seeds"
-- Ensure Row Level Security policies were created
-- Verify that the policies allow public SELECT and INSERT
-
-### Issue: "Invalid API key"
-- Double-check your `.env.local` file
-- Make sure you copied the **anon public** key, not the service role key
-- Restart your dev server after changing environment variables
-
-### Issue: No data appearing in the app
-- Check the browser console for errors
-- Verify the Supabase URL and key are correct
-- Test the connection directly in Supabase dashboard
-
-## Security Notes
-
-For this MVP:
-- ✅ Public read access is enabled (anyone can view listings)
-- ✅ Public insert access is enabled (anyone can post listings)
-- ❌ No authentication is required
-- ❌ No update/delete functionality
-
-**For production**, consider:
-- Implementing user authentication
-- Adding user_id column to track listing owners
-- Restricting updates/deletes to listing owners only
-- Adding content moderation
-- Implementing rate limiting
-
-## Next Steps
-
-After setup is complete:
-1. Test creating a listing via the `/post` page
-2. Verify listings appear on the home page
-3. Test the filter functionality
-4. Check that individual listing pages work
-5. Commit your changes and deploy to Krystal
+- Browse listings at `http://localhost:3000`
+- Sign in at `http://localhost:3000/login` (magic link email)
+- Post a listing at `http://localhost:3000/post`
 
 ---
 
-Need help? Check the main README or [Supabase documentation](https://supabase.com/docs).
+## Optional — Sample Data
+
+```sql
+INSERT INTO seeds (title, variety, category, quantity, description, is_free, contact_method, contact_value, location)
+VALUES
+  (
+    'Heritage Tomato Seeds', 'Brandywine',
+    'Vegetable', '~30 seeds',
+    'Saved from my garden last season. Large pink fruits with excellent flavour. Indeterminate — needs support.',
+    TRUE, 'Email', 'gardener@example.com', 'Brighton, East Sussex'
+  ),
+  (
+    'Purple Sprouting Broccoli', NULL,
+    'Vegetable', '1 packet (~50 seeds)',
+    'Cold-hardy variety producing purple florets in early spring. Very productive.',
+    FALSE, 'Email', 'seeds@example.com', 'Bristol'
+  ),
+  (
+    'Wildflower Meadow Mix', NULL,
+    'Flower', 'Covers ~5m²',
+    'Native UK mix: cornflower, poppy, oxeye daisy and more. Great for wildlife.',
+    FALSE, 'WhatsApp', '447700900000', 'Manchester'
+  );
+```
+
+---
+
+## Troubleshooting
+
+| Error | Fix |
+|---|---|
+| `relation 'seeds' does not exist` | Re-run the CREATE TABLE query |
+| `permission denied for table seeds` | Check RLS policies are created |
+| `Invalid API key` | Check `.env.local` — use the **anon** key, not service role |
+| Magic link not working | Check redirect URLs in Supabase Auth settings |
+| Auth state not persisting | Supabase stores session in localStorage — works on static sites |

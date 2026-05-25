@@ -9,6 +9,29 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      suggestions: {
+        Row: {
+          id: string
+          name: string | null
+          feedback_type: string
+          message: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name?: string | null
+          feedback_type: string
+          message: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string | null
+          feedback_type?: string
+          message?: string
+          created_at?: string
+        }
+      }
       seeds: {
         Row: {
           id: string

@@ -67,6 +67,28 @@ export default function AboutPage() {
             </div>
           </div>
 
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">A Community Site</h2>
+          <p>
+            SeedBay is new and shaped by the people who use it. There&apos;s no corporate agenda — just
+            a simple tool for UK gardeners to connect. If something isn&apos;t working, if you&apos;d like a
+            feature, or if you just want to say what you enjoy about it, your feedback goes directly
+            to the person who built it.
+          </p>
+
+          <div className="bg-primary-50 rounded-lg border border-primary-100 p-6 mt-6">
+            <h3 className="font-semibold text-gray-900 mb-1">Have a suggestion?</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              We welcome both positive feedback and constructive criticism. What&apos;s working well?
+              What would you change? Every message is read.
+            </p>
+            <a
+              href="/suggestions"
+              className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg font-medium transition-colors inline-block text-sm"
+            >
+              Share your thoughts
+            </a>
+          </div>
+
           <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Get Started</h2>
           <p>
             Browse what&apos;s available or post your first listing today — it takes under a minute.

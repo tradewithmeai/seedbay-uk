@@ -21,17 +21,23 @@ export default function Footer() {
                 <a href="/post" className="text-gray-600 hover:text-primary-600">Post a Listing</a>
               </li>
               <li>
-                <a href="/about" className="text-gray-600 hover:text-primary-600">About Us</a>
+                <a href="/about" className="text-gray-600 hover:text-primary-600">About SeedBay</a>
+              </li>
+              <li>
+                <a href="/suggestions" className="text-gray-600 hover:text-primary-600">Suggestions</a>
               </li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold text-gray-900 mb-2">Community</h4>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-sm mb-3">
               Connect with fellow gardeners and seed savers.
               All transactions happen directly between members.
             </p>
+            <a href="/suggestions" className="text-sm text-primary-600 hover:underline font-medium">
+              Got feedback? Share your thoughts →
+            </a>
           </div>
         </div>
 

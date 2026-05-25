@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     url: 'https://seedbay.co.uk',
     title: 'UK Seed Exchange — Buy, Swap & Give Away Seeds | SeedBay',
     description: 'Browse seeds for sale or free from gardeners across the UK. Contact sellers directly — no fees, no middleman.',
+    images: [{ url: 'https://seedbay.co.uk/og-image.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['https://seedbay.co.uk/og-image.png'],
   },
   robots: {
     index: true,

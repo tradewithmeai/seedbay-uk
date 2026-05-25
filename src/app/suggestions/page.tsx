@@ -19,7 +19,7 @@ export default function SuggestionsPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.from('suggestions').insert({
+    const { error } = await (supabase.from('suggestions') as any).insert({
       name: name.trim() || null,
       feedback_type: feedbackType,
       message: message.trim(),

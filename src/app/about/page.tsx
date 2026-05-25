@@ -1,6 +1,13 @@
-export const metadata = {
-  title: 'About - SeedBay.co.uk',
-  description: 'Learn about SeedBay.co.uk, the UK community seed exchange board.',
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'About SeedBay — UK Community Seed Exchange',
+  description: 'SeedBay.co.uk connects UK gardeners to buy, swap and give away seeds. No fees, no middleman — post a listing in minutes and deal directly.',
+  openGraph: {
+    title: 'About SeedBay — UK Community Seed Exchange',
+    description: 'SeedBay.co.uk connects UK gardeners to buy, swap and give away seeds. No fees, no middleman — post a listing in minutes and deal directly.',
+    url: 'https://seedbay.co.uk/about/',
+  },
 }
 
 export default function AboutPage() {
@@ -13,8 +20,8 @@ export default function AboutPage() {
 
         <div className="prose prose-lg max-w-none space-y-6 text-gray-700">
           <p className="text-xl leading-relaxed">
-            SeedBay.co.uk is a low-friction community board connecting seed savers
-            and gardeners across the United Kingdom.
+            SeedBay.co.uk is a free UK seed exchange board — connecting gardeners who want to
+            buy, swap, or give away seeds without any fees or middleman.
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Our Mission</h2>
@@ -62,7 +69,7 @@ export default function AboutPage() {
 
           <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Get Started</h2>
           <p>
-            Browse what&apos;s available or post your first listing today.
+            Browse what&apos;s available or post your first listing today — it takes under a minute.
           </p>
 
           <div className="flex gap-4 mt-8">

@@ -3,7 +3,7 @@ import SeedList from '@/components/SeedList'
 
 export const metadata: Metadata = {
   title: 'UK Seed Exchange — Buy, Swap & Give Away Seeds | SeedBay',
-  description: 'Browse seeds for sale or free from gardeners across the UK. Post your own listings in minutes — contact sellers directly, no fees, no middleman.',
+  description: 'Browse seeds for sale or free from gardeners across the UK. Contact sellers directly — no fees, no middleman. Post your own listing in minutes.',
   openGraph: {
     title: 'UK Seed Exchange — Buy, Swap & Give Away Seeds | SeedBay',
     description: 'Browse seeds for sale or free from gardeners across the UK. Contact sellers directly — no fees, no middleman.',

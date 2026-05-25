@@ -7,6 +7,7 @@ export const metadata: Metadata = {
     title: 'About SeedBay — UK Community Seed Exchange',
     description: 'SeedBay.co.uk connects UK gardeners to buy, swap and give away seeds. No fees, no middleman — post a listing in minutes and deal directly.',
     url: 'https://seedbay.co.uk/about/',
+    images: [{ url: 'https://seedbay.co.uk/og-image.png', width: 1200, height: 630 }],
   },
 }
 

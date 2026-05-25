@@ -60,6 +60,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen flex flex-col">
+        <div className="bg-primary-50 border-b border-primary-100 py-1.5 px-4 text-center text-xs text-primary-700">
+          SeedBay — nothing to do with the big auction site. Just seeds, gardeners, and no fees. 🌱
+        </div>
         <Providers>
           <Header />
           <main className="flex-grow">

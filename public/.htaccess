@@ -1,6 +1,15 @@
 Options -MultiViews
 RewriteEngine On
 
+# Canonical host: force HTTPS + strip www → apex (single hop to https://seedbay.co.uk).
+# seedbay was serving http, https AND www all as 200 with no canonical tag — the exact
+# condition behind GSC's "Duplicate without user-selected canonical". This collapses the
+# duplicate hosts to one URL per page. Must run before the file/dir serving rules below.
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
 # Serve existing files and directories directly
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

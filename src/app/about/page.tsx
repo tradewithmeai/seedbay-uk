@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'About SeedBay — UK Community Seed Exchange',
   description: 'SeedBay.co.uk connects UK gardeners to buy, swap and give away seeds. No fees, no middleman — post a listing in minutes and deal directly.',
+  alternates: { canonical: '/about' },
   openGraph: {
     title: 'About SeedBay — UK Community Seed Exchange',
     description: 'SeedBay.co.uk connects UK gardeners to buy, swap and give away seeds. No fees, no middleman — post a listing in minutes and deal directly.',

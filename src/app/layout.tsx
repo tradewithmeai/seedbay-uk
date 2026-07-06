@@ -63,6 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
+        {/* Central solvX analytics — reports into the shared monitor cross-origin. */}
+        <script src="https://solvx.uk/analytics.js" async />
       </head>
       <body className="min-h-screen flex flex-col">
         <div className="bg-primary-50 border-b border-primary-100 py-1.5 px-4 text-center text-xs text-primary-700">

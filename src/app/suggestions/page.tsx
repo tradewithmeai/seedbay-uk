@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { submitSuggestion } from '@/lib/database'
 
 type FeedbackType = 'positive' | 'constructive'
 
@@ -19,17 +19,16 @@ export default function SuggestionsPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await (supabase.from('suggestions') as any).insert({
-      name: name.trim() || null,
-      feedback_type: feedbackType,
-      message: message.trim(),
-    })
-
-    if (error) {
+    try {
+      await submitSuggestion({
+        name: name.trim() || null,
+        feedback_type: feedbackType,
+        message: message.trim(),
+      })
+      setDone(true)
+    } catch {
       setError('Something went wrong — please try again.')
       setLoading(false)
-    } else {
-      setDone(true)
     }
   }
 

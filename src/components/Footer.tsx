@@ -27,13 +27,13 @@ export default function Footer() {
                 <a href="/seeds/free/" className="text-gray-600 hover:text-primary-600">Free Seeds</a>
               </li>
               <li>
-                <a href="/post" className="text-gray-600 hover:text-primary-600">Post a Listing</a>
+                <a href="/post/" className="text-gray-600 hover:text-primary-600">Post a Listing</a>
               </li>
               <li>
-                <a href="/about" className="text-gray-600 hover:text-primary-600">About SeedBay</a>
+                <a href="/about/" className="text-gray-600 hover:text-primary-600">About SeedBay</a>
               </li>
               <li>
-                <a href="/suggestions" className="text-gray-600 hover:text-primary-600">Suggestions</a>
+                <a href="/suggestions/" className="text-gray-600 hover:text-primary-600">Suggestions</a>
               </li>
             </ul>
           </div>
@@ -44,7 +44,7 @@ export default function Footer() {
               Connect with fellow gardeners and seed savers.
               All transactions happen directly between members.
             </p>
-            <a href="/suggestions" className="text-sm text-primary-600 hover:underline font-medium">
+            <a href="/suggestions/" className="text-sm text-primary-600 hover:underline font-medium">
               Got feedback? Share your thoughts →
             </a>
           </div>

@@ -1,0 +1,19 @@
+# The shared includes are required by the endpoints, never requested directly.
+# Without this they would be reachable over HTTP, and any PHP misconfiguration
+# would then serve their source as plain text.
+<FilesMatch "^_.*\.php$">
+    Require all denied
+</FilesMatch>
+
+# Reference only - must never be downloadable.
+<FilesMatch "\.(sql|md|example\.php)$">
+    Require all denied
+</FilesMatch>
+
+# API responses are per-user (session cookie) or change whenever a listing is
+# posted. Never let a proxy hold one.
+<IfModule mod_headers.c>
+    <FilesMatch "\.php$">
+        Header always set Cache-Control "no-store"
+    </FilesMatch>
+</IfModule>

@@ -35,3 +35,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# API credentials - lives outside public_html on the server, never in git
+seedbay-secrets.php

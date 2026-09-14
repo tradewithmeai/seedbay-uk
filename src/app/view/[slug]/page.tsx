@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import SeedDetail from '@/components/SeedDetail'
 import { getBuildSeeds } from '@/lib/seeds-static'
-import { seedSlug } from '@/lib/slug'
+import { EMPTY_LISTING_SLUG, seedSlug } from '@/lib/slug'
 import type { Seed } from '@/types/database'
 
 // Every listing gets its own crawlable URL, baked at build time. Before this,
@@ -12,6 +12,11 @@ export const dynamicParams = false
 
 export async function generateStaticParams() {
   const seeds = await getBuildSeeds()
+  if (seeds.length === 0) {
+    // See EMPTY_LISTING_SLUG - an export cannot build a dynamic route with no
+    // params, and an empty board is the site's launch state.
+    return [{ slug: EMPTY_LISTING_SLUG }]
+  }
   return seeds.map((seed) => ({ slug: seedSlug(seed) }))
 }
 
@@ -31,7 +36,9 @@ function metaDescription(seed: Seed) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const seed = await findSeed(slug)
-  if (!seed) return {}
+  if (!seed) {
+    return { title: 'No listings yet', robots: { index: false, follow: true } }
+  }
 
   const variety = seed.variety ? ` (${seed.variety})` : ''
   const where = seed.location ? ` — ${seed.location}` : ''
@@ -57,7 +64,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function SeedDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const seed = await findSeed(slug)
-  if (!seed) notFound()
+  if (!seed) return <EmptyBoard />
 
   const productSchema = {
     '@context': 'https://schema.org',
@@ -98,5 +105,24 @@ export default async function SeedDetailPage({ params }: { params: Promise<{ slu
       />
       <SeedDetail seed={seed} />
     </>
+  )
+}
+
+/** Rendered only for EMPTY_LISTING_SLUG, i.e. while the board has no listings. */
+function EmptyBoard() {
+  return (
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+      <p className="text-4xl mb-4">🌱</p>
+      <h1 className="text-2xl font-bold text-gray-900 mb-3">No listings yet</h1>
+      <p className="text-gray-600 mb-6">
+        Nobody has posted seeds yet. Be the first - it takes a minute and costs nothing.
+      </p>
+      <Link
+        href="/post/"
+        className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+      >
+        Post a listing
+      </Link>
+    </div>
   )
 }

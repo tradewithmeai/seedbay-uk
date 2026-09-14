@@ -16,7 +16,15 @@ const ORIGIN = 'https://seedbay.co.uk'
 
 // Routes that exist but must never be indexed: the auth-walled pages, the
 // legacy query-param view route, and Next's error pages.
-const EXCLUDED = [/^\/post\//, /^\/login\//, /^\/view\/$/, /^\/404\//, /^\/_not-found\//, /^\/_next\//]
+const EXCLUDED = [
+  /^\/post\//,
+  /^\/login\//,
+  /^\/view\/$/,
+  /^\/view\/no-listings-yet\//,   // placeholder that exists only on an empty board
+  /^\/404\//,
+  /^\/_not-found\//,
+  /^\/_next\//,
+]
 
 function walk(dir, urlPath, found) {
   let entries

@@ -11,7 +11,7 @@ export default function PostPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login')
+      router.push('/login/')
     }
   }, [user, loading, router])
 

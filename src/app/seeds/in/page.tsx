@@ -39,7 +39,7 @@ export default async function LocationsIndexPage() {
       {groups.length === 0 ? (
         <p className="text-gray-600">
           No locations yet.{' '}
-          <Link href="/post" className="text-primary-600 hover:underline">
+          <Link href="/post/" className="text-primary-600 hover:underline">
             Post a listing
           </Link>{' '}
           and yours will be the first.

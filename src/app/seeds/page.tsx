@@ -72,7 +72,7 @@ export default async function SeedsHubPage() {
       {locations.length === 0 ? (
         <p className="text-gray-600">
           No locations yet.{' '}
-          <Link href="/post" className="text-primary-600 hover:underline">
+          <Link href="/post/" className="text-primary-600 hover:underline">
             Post a listing
           </Link>{' '}
           and yours will appear here.

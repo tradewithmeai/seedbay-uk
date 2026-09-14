@@ -11,7 +11,7 @@ export default function SeedGrid({ seeds, emptyMessage }: { seeds: Seed[]; empty
         <p className="text-3xl mb-3">🌱</p>
         <p className="text-gray-600 mb-5">{emptyMessage}</p>
         <Link
-          href="/post"
+          href="/post/"
           className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
         >
           Post the first listing

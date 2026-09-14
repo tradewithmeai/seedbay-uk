@@ -1,84 +1,66 @@
-import { supabase } from './supabase'
-import { SeedInsert } from '@/types/database'
+import { api } from './api'
+import type { Seed, SeedInsert, SessionUser } from '@/types/database'
 
-function activeFilter() {
-  return new Date().toISOString()
+// --- listings ---------------------------------------------------------------
+
+export async function getAllSeeds(): Promise<Seed[]> {
+  const data = await api<{ seeds: Seed[] }>('/api/seeds.php')
+  return data?.seeds ?? []
 }
 
-export async function getAllSeeds() {
-  const { data, error } = await supabase
-    .from('seeds')
-    .select('*')
-    .eq('active', true)
-    .or(`expires_at.is.null,expires_at.gt.${activeFilter()}`)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching seeds:', error)
-    return []
-  }
-  return data || []
+export async function getSeedById(id: string): Promise<Seed | null> {
+  // 404 is an ordinary outcome here (expired or removed listing), not a failure.
+  const data = await api<{ seed: Seed }>(`/api/seed.php?id=${encodeURIComponent(id)}`, {
+    allowStatus: [400, 404],
+  })
+  return data?.seed ?? null
 }
 
-export async function getSeedById(id: string) {
-  const { data, error } = await supabase
-    .from('seeds')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) {
-    console.error('Error fetching seed:', error)
-    return null
-  }
-  return data
-}
-
-export async function createSeed(seed: SeedInsert): Promise<{ id: string }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from('seeds').insert(seed as any).select('id').single() as any) as {
-    data: { id: string } | null
-    error: Error | null
-  }
-
-  if (error) {
-    console.error('Error creating seed:', error)
-    throw error
-  }
-  return data!
-}
-
-export async function searchSeeds(filters: {
+export interface SeedFilters {
   title?: string
   category?: string
   location?: string
   is_free?: boolean
-}) {
-  let query = supabase
-    .from('seeds')
-    .select('*')
-    .eq('active', true)
-    .or(`expires_at.is.null,expires_at.gt.${activeFilter()}`)
-    .order('created_at', { ascending: false })
+}
 
-  if (filters.title) {
-    query = query.or(`title.ilike.%${filters.title}%,variety.ilike.%${filters.title}%`)
-  }
-  if (filters.category) {
-    query = query.eq('category', filters.category)
-  }
-  if (filters.location) {
-    query = query.ilike('location', `%${filters.location}%`)
-  }
-  if (filters.is_free === true) {
-    query = query.eq('is_free', true)
-  }
+export async function searchSeeds(filters: SeedFilters): Promise<Seed[]> {
+  const params = new URLSearchParams()
+  if (filters.title) params.set('title', filters.title)
+  if (filters.category) params.set('category', filters.category)
+  if (filters.location) params.set('location', filters.location)
+  if (filters.is_free) params.set('free', '1')
 
-  const { data, error } = await query
+  const query = params.toString()
+  const data = await api<{ seeds: Seed[] }>(`/api/seeds.php${query ? `?${query}` : ''}`)
+  return data?.seeds ?? []
+}
 
-  if (error) {
-    console.error('Error searching seeds:', error)
-    return []
-  }
-  return data || []
+export async function createSeed(seed: SeedInsert): Promise<{ id: string }> {
+  const data = await api<{ id: string }>('/api/seeds.php', { method: 'POST', body: seed })
+  return data!
+}
+
+// --- auth -------------------------------------------------------------------
+
+export async function requestSignInLink(email: string): Promise<void> {
+  await api('/api/auth/request.php', { method: 'POST', body: { email } })
+}
+
+export async function getSessionUser(): Promise<SessionUser | null> {
+  const data = await api<{ user: SessionUser | null }>('/api/auth/me.php')
+  return data?.user ?? null
+}
+
+export async function signOut(): Promise<void> {
+  await api('/api/auth/logout.php', { method: 'POST' })
+}
+
+// --- feedback ---------------------------------------------------------------
+
+export async function submitSuggestion(input: {
+  name?: string | null
+  feedback_type: string
+  message: string
+}): Promise<void> {
+  await api('/api/suggestions.php', { method: 'POST', body: input })
 }

@@ -84,7 +84,7 @@ export default function AboutPage() {
               What would you change? Every message is read.
             </p>
             <a
-              href="/suggestions"
+              href="/suggestions/"
               className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg font-medium transition-colors inline-block text-sm"
             >
               Share your thoughts
@@ -104,7 +104,7 @@ export default function AboutPage() {
               Browse Seeds
             </a>
             <a
-              href="/post"
+              href="/post/"
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors inline-block"
             >
               Post a Listing

@@ -68,10 +68,10 @@ export default function HomePage() {
           spotted something that could be better, or just want to say what&apos;s working — we&apos;d love to hear from you.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
-          <a href="/about" className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+          <a href="/about/" className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-5 py-2 rounded-lg font-medium transition-colors text-sm">
             About SeedBay
           </a>
-          <a href="/suggestions" className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+          <a href="/suggestions/" className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg font-medium transition-colors text-sm">
             Share your thoughts
           </a>
         </div>

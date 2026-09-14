@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSeed } from '@/lib/database'
 import { SeedInsert } from '@/types/database'
-import { supabase } from '@/lib/supabase'
 
 const CATEGORIES = ['Vegetable', 'Flower', 'Herb', 'Fruit', 'Tree / Shrub', 'Other']
 const CONTACT_METHODS = ['Email', 'WhatsApp', 'Signal', 'Other']
@@ -54,15 +53,7 @@ export default function SeedForm() {
     setError(null)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-
-      const expires_at =
-        expiry !== 'never'
-          ? new Date(Date.now() + Number(expiry) * 86_400_000).toISOString()
-          : null
-
       const seed: SeedInsert = {
-        user_id: session?.user.id ?? null,
         title: formData.title,
         variety: formData.variety || null,
         category: formData.category,
@@ -73,11 +64,15 @@ export default function SeedForm() {
         contact_method: formData.contact_method,
         contact_value: formData.contact_value,
         location: formData.location || null,
-        expires_at,
+        expiry_days: expiry === 'never' ? null : Number(expiry),
       }
 
       const created = await createSeed(seed)
-      router.push(`/view?id=${created.id}`)
+
+      // The listing's own page does not exist until the next build, so send the
+      // poster to the legacy id route - it resolves live against the API and
+      // forwards to the pre-rendered page once that has been generated.
+      router.push(`/view/?id=${created.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create listing')
       setLoading(false)

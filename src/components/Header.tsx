@@ -23,13 +23,13 @@ export default function Header() {
               Browse
             </Link>
             <Link
-              href={user ? '/post' : '/login'}
+              href={user ? '/post/' : '/login/'}
               className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
               Post Listing
             </Link>
             <Link
-              href="/about"
+              href="/about/"
               className="text-gray-700 hover:text-primary-600 transition-colors font-medium"
             >
               About
@@ -43,7 +43,7 @@ export default function Header() {
               </button>
             ) : (
               <Link
-                href="/login"
+                href="/login/"
                 className="text-gray-500 hover:text-primary-600 text-sm transition-colors"
               >
                 Sign in

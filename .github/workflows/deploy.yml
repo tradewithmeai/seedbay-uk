@@ -9,6 +9,11 @@ on:
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: 'First deploy only: build with no listings because the API is not on the server yet'
+        type: boolean
+        default: false
 
 jobs:
   deploy:
@@ -27,8 +32,14 @@ jobs:
       - name: Build Next.js app
         run: npm run build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # The build reads the live API to pre-render listing pages. The API is
+          # public and read-only for this, so there is no credential here.
+          SEEDBAY_API_BASE: https://seedbay.co.uk
+          # One cache key per run, shared by every build worker: fresh listings
+          # each build, fetched once within it. See src/lib/seeds-static.ts.
+          SEEDBAY_BUILD_KEY: ${{ github.run_id }}-${{ github.run_attempt }}
+          # Only ever set by a manual run with the bootstrap box ticked.
+          SEEDBAY_BOOTSTRAP: ${{ inputs.bootstrap && '1' || '0' }}
 
       - name: Write deploy marker
         run: |

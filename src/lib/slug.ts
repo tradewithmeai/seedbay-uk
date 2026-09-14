@@ -28,3 +28,14 @@ export function categorySlug(category: string): string {
 export function locationSlug(location: string): string {
   return slugify(location)
 }
+
+/*
+ * Placeholder route for /view/[slug] when the board has no listings at all.
+ *
+ * `output: export` refuses to build a dynamic route that produces zero static
+ * params, so an empty database would fail the build outright - which is exactly
+ * the state the site launches in. This gives the route one page to generate.
+ * It is noindex and excluded from the sitemap, and disappears as soon as
+ * anybody posts anything.
+ */
+export const EMPTY_LISTING_SLUG = 'no-listings-yet'

@@ -65,34 +65,22 @@ Click **"New repository secret"** for each:
 - **Name**: `FTP_REMOTE_DIR`
 - **Value**: Your app directory path (e.g., `/public_html`)
 
-#### 5. NEXT_PUBLIC_SUPABASE_URL
-- **Name**: `NEXT_PUBLIC_SUPABASE_URL`
-- **Value**: `https://cogxunjrdqsuvlgbmokf.supabase.co`
-
-#### 6. NEXT_PUBLIC_SUPABASE_ANON_KEY
-- **Name**: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- **Value**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvZ3h1bmpyZHFzdXZsZ2Jtb2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NzQ4MzUsImV4cCI6MjA2NjQ1MDgzNX0.bV7nN60sA8MDut1iZ5Ede0jBJGfLwkJkp5Rw-Dqlmd0`
-
 ---
 
-## Step 3: Configure Krystal App to Run Node.js
+## Step 3: PHP and the database
 
-### In your Krystal Node.js app settings:
+The site is a **static export** — plain HTML served straight by LiteSpeed — with
+a small PHP API beside it. There is no Node.js app to configure on Krystal.
 
-1. **Start Command**: Set to `npm start`
-2. **Build Command**: (optional) `npm run build`
-3. **Node Version**: Set to `18` or `20`
-4. **Auto-restart**: Enable if available
+What you do need:
 
-### Add Environment Variables in Krystal:
+1. **PHP 8.0+** on the domain (cPanel → MultiPHP Manager).
+2. A **MySQL database**, its schema loaded, and a credentials file above
+   `public_html`. All of that is in **[API_SETUP.md](API_SETUP.md)** — do it
+   before the first deploy.
 
-In your Krystal app settings, add these environment variables:
-
-| Variable | Value |
-|----------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://cogxunjrdqsuvlgbmokf.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvZ3h1bmpyZHFzdXZsZ2Jtb2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NzQ4MzUsImV4cCI6MjA2NjQ1MDgzNX0.bV7nN60sA8MDut1iZ5Ede0jBJGfLwkJkp5Rw-Dqlmd0` |
-| `NODE_ENV` | `production` |
+No environment variables are set on Krystal itself: the API reads its
+credentials from `~/seedbay-secrets.php`, and the front end has none.
 
 ---
 
@@ -164,7 +152,7 @@ Let's test it:
 
 ### "Build failed"
 - Check all 6 GitHub secrets are set correctly
-- Verify Supabase credentials are correct
+- Check `~/seedbay-secrets.php` exists, is readable, and has the right database name, user and password
 - Check GitHub Actions logs for specific error
 
 ### "Site shows old version"

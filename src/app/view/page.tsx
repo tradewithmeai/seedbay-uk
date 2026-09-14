@@ -1,16 +1,27 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { getSeedById } from '@/lib/database'
 import { seedSlug } from '@/lib/slug'
+import SeedDetail from '@/components/SeedDetail'
+import type { Seed } from '@/types/database'
 
-// Legacy route. Listings used to live at /view?id=<uuid> and were rendered
-// client-side; they now have pre-rendered pages at /view/<slug>/. Old links,
-// bookmarks and any backlinks still land here, so this forwards them to the
-// canonical URL rather than 404ing. Marked noindex in view/layout.tsx — the
-// slug page is the one Google should hold.
+/*
+ * Legacy / live route: /view/?id=<uuid>
+ *
+ * Listings have pre-rendered pages at /view/<slug>/, but those only exist after
+ * the next build, so this route renders the listing live from the API instead of
+ * forwarding to a page that may not be there yet. It serves two jobs:
+ *
+ *   - old links and backlinks from when this was the only listing URL
+ *   - the moment just after someone posts, before the nightly build runs
+ *
+ * Marked noindex in view/layout.tsx, with a canonical pointing at the slug page,
+ * so Google only ever holds the pre-rendered one.
+ */
+
 const Skeleton = () => (
   <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div className="animate-pulse">
@@ -28,56 +39,66 @@ const Skeleton = () => (
   </div>
 )
 
-function ViewRedirect() {
+function LiveSeedDetail() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const id = searchParams.get('id') || ''
-  const [failed, setFailed] = useState(false)
+  const [seed, setSeed] = useState<Seed | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!id) {
-      setFailed(true)
+      setLoading(false)
       return
     }
 
     let cancelled = false
     getSeedById(id)
-      .then((seed) => {
-        if (cancelled) return
-        if (seed) router.replace(`/view/${seedSlug(seed)}/`)
-        else setFailed(true)
+      .then((found) => {
+        if (!cancelled) setSeed(found)
       })
       .catch(() => {
-        if (!cancelled) setFailed(true)
+        if (!cancelled) setSeed(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
       })
 
     return () => {
       cancelled = true
     }
-  }, [id, router])
+  }, [id])
 
-  if (!failed) return <Skeleton />
+  if (loading) return <Skeleton />
+
+  if (!seed) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Listing Not Found</h1>
+          <p className="text-gray-600 mb-6">This listing may have expired or been removed.</p>
+          <Link
+            href="/"
+            className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Browse All Listings
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Listing Not Found</h1>
-        <p className="text-gray-600 mb-6">This listing may have expired or been removed.</p>
-        <Link
-          href="/"
-          className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          Browse All Listings
-        </Link>
-      </div>
-    </div>
+    <>
+      <link rel="canonical" href={`https://seedbay.co.uk/view/${seedSlug(seed)}/`} />
+      <SeedDetail seed={seed} />
+    </>
   )
 }
 
 export default function LegacyViewPage() {
   return (
     <Suspense fallback={<Skeleton />}>
-      <ViewRedirect />
+      <LiveSeedDetail />
     </Suspense>
   )
 }

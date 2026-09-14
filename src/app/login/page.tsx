@@ -1,20 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { requestSignInLink } from '@/lib/database'
 import { useAuth } from '@/context/AuthContext'
 
-export default function LoginPage() {
+// verify.php sends people back here with ?error=... when a link cannot be used.
+const LINK_ERRORS: Record<string, string> = {
+  invalid: 'That sign-in link was not valid. Request a fresh one below.',
+  expired: 'That link has already been used or has expired. Request a fresh one below.',
+  server: 'Something went wrong signing you in. Try again in a moment.',
+}
+
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const linkError = LINK_ERRORS[searchParams.get('error') ?? '']
 
   useEffect(() => {
-    if (user) router.push('/post')
+    if (user) router.push('/post/')
   }, [user, router])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -22,18 +31,12 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/post`,
-      },
-    })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-    } else {
+    try {
+      await requestSignInLink(email)
       setSent(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send the link. Try again.')
+      setLoading(false)
     }
   }
 
@@ -59,6 +62,12 @@ export default function LoginPage() {
         <p className="text-gray-600 mb-6">
           Enter your email and we&apos;ll send you a magic link — no password needed.
         </p>
+
+        {linkError && !error && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4 mb-4 text-sm">
+            {linkError}
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-4 text-sm">
@@ -95,5 +104,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   )
 }

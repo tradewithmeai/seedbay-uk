@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import SeedList from '@/components/SeedList'
+import { CATEGORIES, CATEGORY_COPY } from '@/lib/categories'
+import { categorySlug } from '@/lib/slug'
 
 export const metadata: Metadata = {
   title: 'UK Seed Exchange — Buy, Swap & Give Away Seeds | SeedBay',
@@ -28,6 +31,32 @@ export default function HomePage() {
           Vegetable seeds, flower seeds, herb seeds &amp; more — listed by UK gardeners near you
         </h2>
       </div>
+
+      {/* Entry points into the pre-rendered hub pages. The listings below are
+          fetched client-side, so these links are how a crawler reaches them. */}
+      <nav aria-label="Browse by seed type" className="flex flex-wrap justify-center gap-2 mb-10">
+        {CATEGORIES.map((category) => (
+          <Link
+            key={category}
+            href={`/seeds/${categorySlug(category)}/`}
+            className="inline-block bg-white border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 px-4 py-2 rounded-lg text-sm transition-colors"
+          >
+            {CATEGORY_COPY[category].emoji} {CATEGORY_COPY[category].heading}
+          </Link>
+        ))}
+        <Link
+          href="/seeds/free/"
+          className="inline-block bg-green-50 border border-green-200 hover:border-green-300 text-green-800 px-4 py-2 rounded-lg text-sm transition-colors"
+        >
+          🎁 Free seeds
+        </Link>
+        <Link
+          href="/seeds/in/"
+          className="inline-block bg-white border border-gray-200 hover:border-primary-300 text-gray-700 hover:text-primary-700 px-4 py-2 rounded-lg text-sm transition-colors"
+        >
+          📍 Seeds near you
+        </Link>
+      </nav>
 
       <SeedList />
 

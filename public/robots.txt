@@ -2,6 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /post/
 Disallow: /login/
-Disallow: /view/
 
 Sitemap: https://seedbay.co.uk/sitemap.xml

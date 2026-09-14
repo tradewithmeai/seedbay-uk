@@ -3,6 +3,11 @@ name: Deploy to Krystal
 on:
   push:
     branches: [ "main" ]
+  # Listing pages are pre-rendered at build time (static export — there is no
+  # request-time fetch on Krystal), so a listing posted today is only crawlable
+  # after the next build. This nightly run is what keeps the sitemap current.
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
 
 jobs:

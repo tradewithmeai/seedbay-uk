@@ -18,6 +18,15 @@ export default function Footer() {
                 <a href="/" className="text-gray-600 hover:text-primary-600">Browse Listings</a>
               </li>
               <li>
+                <a href="/seeds/" className="text-gray-600 hover:text-primary-600">Seeds by Type</a>
+              </li>
+              <li>
+                <a href="/seeds/in/" className="text-gray-600 hover:text-primary-600">Seeds by Location</a>
+              </li>
+              <li>
+                <a href="/seeds/free/" className="text-gray-600 hover:text-primary-600">Free Seeds</a>
+              </li>
+              <li>
                 <a href="/post" className="text-gray-600 hover:text-primary-600">Post a Listing</a>
               </li>
               <li>

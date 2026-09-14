@@ -1,14 +1,7 @@
 import Link from 'next/link'
 import { Seed } from '@/types/database'
-
-const CATEGORY_COLORS: Record<string, string> = {
-  'Vegetable': 'bg-green-100 text-green-700',
-  'Flower': 'bg-pink-100 text-pink-700',
-  'Herb': 'bg-emerald-100 text-emerald-700',
-  'Fruit': 'bg-orange-100 text-orange-700',
-  'Tree / Shrub': 'bg-amber-100 text-amber-700',
-  'Other': 'bg-gray-100 text-gray-600',
-}
+import { CATEGORY_COLORS } from '@/lib/categories'
+import { seedSlug } from '@/lib/slug'
 
 interface SeedCardProps {
   seed: Seed
@@ -24,7 +17,7 @@ export default function SeedCard({ seed }: SeedCardProps) {
   const categoryColor = CATEGORY_COLORS[seed.category] ?? 'bg-gray-100 text-gray-600'
 
   return (
-    <Link href={`/view?id=${seed.id}`}>
+    <Link href={`/view/${seedSlug(seed)}/`}>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-5 h-full flex flex-col">
         <div className="flex items-start justify-between mb-1">
           <div className="flex-grow min-w-0 mr-2">

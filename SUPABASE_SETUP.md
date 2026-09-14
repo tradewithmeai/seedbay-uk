@@ -1,5 +1,11 @@
 # Supabase Setup Guide for SeedBay.co.uk
 
+> **If you are rebuilding after losing the project:** work through every step
+> below, then update the `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+> GitHub Actions secrets to match the new project. The site build reads the
+> database at build time to pre-render listing pages, so the deploy workflow
+> fails outright until those secrets point at a working project.
+
 ## Overview
 
 This guide covers setting up the Supabase database and auth for SeedBay.co.uk.
@@ -63,6 +69,30 @@ CREATE POLICY "Auth users can insert"
 CREATE POLICY "Users manage own listings"
   ON seeds FOR ALL
   USING (auth.uid() = user_id);
+```
+
+---
+
+## Step 3b — Create the Suggestions Table
+
+The /suggestions page writes here. Easy to forget when rebuilding the project,
+and its absence is silent — the form just fails.
+
+```sql
+CREATE TABLE IF NOT EXISTS suggestions (
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT,
+  feedback_type TEXT        NOT NULL,
+  message       TEXT        NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE suggestions ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can leave feedback; nobody can read it back through the anon key.
+CREATE POLICY "Public insert"
+  ON suggestions FOR INSERT
+  WITH CHECK (TRUE);
 ```
 
 ---

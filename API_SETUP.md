@@ -28,11 +28,17 @@ You should end up with five tables: `users`, `login_tokens`, `sessions`,
 
 ## 2. Put the credentials above the web root
 
-The API reads its credentials from `seedbay-secrets.php`, which must sit **one
-level above `public_html`** so it is never reachable over HTTP.
+The API reads its credentials from `seedbay-secrets.php`, which must sit in your
+**home folder** — the one that *contains* `public_html` — so it is never
+reachable over HTTP under any domain on the account.
 
-cPanel → **File Manager** → the folder that *contains* `public_html` → create
-`seedbay-secrets.php` with:
+The API looks for it above the web root, furthest first, so this works whether
+seedbay is the primary domain (docroot `/public_html`) or an addon domain
+(docroot `/public_html/seedbay.co.uk`). Put it in the home folder either way;
+do not put it in `/public_html`, which is a live web root.
+
+cPanel → **File Manager** → **Home** (the folder that *contains* `public_html`)
+→ create `seedbay-secrets.php` with:
 
 ```php
 <?php

@@ -27,9 +27,33 @@ function secrets(): array
         return $secrets;
     }
 
-    // public_html/api/_lib.php -> public_html/api -> public_html -> home
-    $path = dirname(__DIR__, 2) . '/seedbay-secrets.php';
-    if (!is_readable($path)) {
+    /*
+     * Look for the secrets file above the web root, furthest first.
+     *
+     * Where "above the web root" lands depends on how the domain is set up:
+     *
+     *   addon domain   docroot /public_html/seedbay.co.uk
+     *                  -> depth 3 is the home folder (what we want)
+     *                  -> depth 2 would be /public_html, i.e. ANOTHER site's
+     *                     web root - never put credentials there
+     *
+     *   primary domain docroot /public_html
+     *                  -> depth 3 is /home (shared, nothing of ours there)
+     *                  -> depth 2 is the home folder (what we want)
+     *
+     * Taking the furthest readable match handles both without the layout being
+     * hardcoded, and always prefers the location outside every web root.
+     */
+    $path = null;
+    foreach ([3, 2] as $depth) {
+        $candidate = dirname(__DIR__, $depth) . '/seedbay-secrets.php';
+        if (is_readable($candidate)) {
+            $path = $candidate;
+            break;
+        }
+    }
+
+    if ($path === null) {
         fail(500, 'server_misconfigured', 'API secrets file is missing.');
     }
 
